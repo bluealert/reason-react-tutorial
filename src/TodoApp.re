@@ -21,13 +21,10 @@ module TodoItem = {
   };
 };
 
-let valueFromEvent = evt : string => (
-                                       evt
-                                       |> ReactEventRe.Form.target
-                                       |> ReactDOMRe.domElementToObj
-                                     )##value;
-
 module Input = {
+  let evtToObj = evt =>
+    evt |> ReactEventRe.Form.target |> ReactDOMRe.domElementToObj;
+  let valFromEvt = evt : string => (evt |> evtToObj)##value;
   type state = string;
   let component = ReasonReact.reducerComponent("Input");
   let make = (~onSubmit, _) => {
@@ -39,10 +36,11 @@ module Input = {
         value=text
         _type="text"
         placeholder="Write something to do"
-        onChange=(reduce(evt => valueFromEvent(evt)))
+        onChange=(reduce(evt => valFromEvt(evt)))
         onKeyDown=(
           evt =>
-            if (ReactEventRe.Keyboard.key(evt) == "Enter") {
+            if (ReactEventRe.Keyboard.key(evt) == "Enter"
+                && String.length(text) > 0) {
               onSubmit(text);
               (reduce(() => ""))();
             }
